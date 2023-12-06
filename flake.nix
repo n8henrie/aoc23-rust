@@ -27,28 +27,49 @@
           inherit system;
           overlays = [(import rust-overlay)];
         };
-        toolchain = pkgs.rust-bin.stable.latest.default;
-        rustPlatform = pkgs.makeRustPlatform {
-          rustc = toolchain;
-          cargo = toolchain;
+        stable = pkgs.rust-bin.stable.latest.default.override {
+          extensions = ["rust-src"];
         };
-        inherit ((builtins.fromTOML (builtins.readFile ./Cargo.toml)).package) name;
+        nightly = pkgs.rust-bin.selectLatestNightlyWith (toolchain:
+          toolchain.default.override {
+            extensions = ["rust-src"];
+          });
       in {
-        packages.${system} = {
-          default = self.packages.${system}.${name};
-          ${name} = rustPlatform.buildRustPackage {
-            inherit name;
-            version = "0.0.1";
-            src = ./.;
-            cargoLock.lockFile = ./Cargo.lock;
+        packages.${system} = let
+          rustPlatform = pkgs.makeRustPlatform {
+            rustc = stable;
+            cargo = stable;
           };
-        };
+          workspace = name:
+            rustPlatform.buildRustPackage {
+              inherit name;
+              version = "0.0.1";
+              src = ./.;
+              cargoLock.lockFile = ./Cargo.lock;
+              cargoBuildFlags = "-p ${name}";
+            };
+          wsDirs = with builtins;
+            attrNames (
+              lib.filterAttrs (n: v: v == "directory" && match "^d[0-2][0-9]$" n != null)
+              (readDir ./.)
+            );
+        in
+          lib.genAttrs wsDirs workspace;
 
-        devShells.${system}.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
+        devShells.${system} = let
+          defaultInputs = with pkgs; [
             aoc-cli
-            toolchain
+            cargo-watch
           ];
+        in {
+          default = pkgs.mkShell {
+            buildInputs = defaultInputs ++ [stable];
+            RUST_SRC_PATH = "${stable}/lib/rustlib/src/rust/library";
+          };
+          nightly = pkgs.mkShell {
+            buildInputs = defaultInputs ++ [nightly];
+            RUST_SRC_PATH = "${nightly}/lib/rustlib/src/rust/library";
+          };
         };
       }
     );

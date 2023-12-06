@@ -1,0 +1,51 @@
+---
+name: Documentation
+on:
+  push:
+  pull_request:
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt, rust-src, clippy
+      - name: Build Documentation
+        env:
+          RUSTUP_TOOLCHAIN: nightly
+          RUSTDOCFLAGS: -D warnings -Zunstable-options --enable-index-page
+        run: |
+          cargo doc \
+            --no-deps \
+            --document-private-items \
+            --all-features \
+            --workspace
+      - name: Upload artifact to Pages
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: 'target/doc'
+
+  deploy:
+    if: github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v2
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
