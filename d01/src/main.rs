@@ -1,8 +1,5 @@
 // #![warn(clippy::pedantic)]
-use aoc::{err, localpath, parse_input, Error, Result};
-
-use std::borrow::Cow;
-use std::collections::HashMap;
+use aoc::{err, Result};
 
 const INPUT: &str = include_str!("../input.txt");
 
@@ -20,15 +17,14 @@ fn find_map_inc_strings(line: &str, reverse: bool) -> Option<u32> {
         ("nine", 9),
     ];
 
-    let indices: Vec<_> = if reverse {
-        line.char_indices().rev().collect()
+    let indices: Box<dyn Iterator<Item = _>> = if reverse {
+        Box::new(line.char_indices().rev())
     } else {
-        line.char_indices().collect()
+        Box::new(line.char_indices())
     };
     indices.into_iter().find_map(|(idx, char)| {
         char.to_digit(10).or_else(|| {
             words.iter().find_map(|(w, val)| {
-                dbg!(reverse, line.get(idx..));
                 if line.get(idx..)?.starts_with(w) {
                     Some(*val)
                 } else {
@@ -73,6 +69,14 @@ fn solve(input: &str, include_strings: bool) -> Result<u32> {
     })
 }
 
+fn part1(input: &str) -> Result<u32> {
+    solve(input, false)
+}
+
+fn part2(input: &str) -> Result<u32> {
+    solve(input, true)
+}
+
 fn main() -> Result<()> {
     println!("day 01 part 1: {}", solve(INPUT, false)?);
     println!("day 01 part 2: {}", solve(INPUT, true)?);
@@ -111,7 +115,7 @@ zoneight234
                 dbg!(v);
             })
             .all(|(left, right)| left.unwrap() == right));
-        assert_eq!(solve(PART1_EXAMPLE_INPUT, false).unwrap(), 142);
+        assert_eq!(part1(PART1_EXAMPLE_INPUT).unwrap(), 142);
     }
 
     #[test]
@@ -128,6 +132,12 @@ zoneight234
                 dbg!(v);
             })
             .all(|(left, right)| left.unwrap() == right));
-        assert_eq!(solve(PART2_EXAMPLE_INPUT, true).unwrap(), 281);
+        assert_eq!(part2(PART2_EXAMPLE_INPUT).unwrap(), 281);
+    }
+
+    #[test]
+    fn regression() {
+        assert_eq!(part1(INPUT).unwrap(), 53334);
+        assert_eq!(part2(INPUT).unwrap(), 52834);
     }
 }
