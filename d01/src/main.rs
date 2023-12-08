@@ -1,4 +1,4 @@
-// #![warn(clippy::pedantic)]
+#![warn(clippy::pedantic)]
 use aoc::{err, Result};
 
 const INPUT: &str = include_str!("../input.txt");
@@ -78,8 +78,8 @@ fn part2(input: &str) -> Result<u32> {
 }
 
 fn main() -> Result<()> {
-    println!("day 01 part 1: {}", solve(INPUT, false)?);
-    println!("day 01 part 2: {}", solve(INPUT, true)?);
+    println!("day 01 part 1: {}", part1(INPUT)?);
+    println!("day 01 part 2: {}", part2(INPUT)?);
     Ok(())
 }
 
@@ -87,14 +87,14 @@ fn main() -> Result<()> {
 mod tests {
     use super::*;
 
-    static PART1_EXAMPLE_INPUT: &str = r#"
+    static PART1_EXAMPLE_INPUT: &str = r"
 1abc2
 pqr3stu8vwx
 a1b2c3d4e5f
 treb7uchet
-"#;
+";
 
-    static PART2_EXAMPLE_INPUT: &str = r#"
+    static PART2_EXAMPLE_INPUT: &str = r"
 two1nine
 eightwothree
 abcone2threexyz
@@ -102,7 +102,7 @@ xtwone3four
 4nineeightseven2
 zoneight234
 7pqrstsixteen
-"#;
+";
 
     #[test]
     fn test_part1() {
