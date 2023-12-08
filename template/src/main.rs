@@ -34,4 +34,13 @@ mod tests {
     fn test_part2() {
         assert!(false);
     }
+
+    #[test]
+    /// Once a solution is found, enter it here to ensure that further
+    /// optimizations don't break the code.
+    fn regression() {
+        assert!(false);
+        // assert_eq!(part1(INPUT).unwrap(), _);
+        // assert_eq!(part2(INPUT).unwrap(), _);
+    }
 }
